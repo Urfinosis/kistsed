@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	xmlns:c="http://java.sun.com/jsp/jstl/core"
+	xmlns:form="http://www.springframework.org/tags/form">
+<head>
+<title>Profile</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet"
+	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+	<link rel="stylesheet"
+	href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css" />
+<link rel="stylesheet" th:href="@{/resources/static/css/min_decor.css}" />
+<style>
+body {
+	position: relative;
+}
+
+ul.nav-pills {
+	top: 20px;
+	position: fixed;
+}
+
+div.col-md-9 div {
+	height: 250px;
+	font-size: 28px;
+}
+
+</style>
+</head>
+<body>
+	<nav class="navbar navbar-inverse">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed"
+					data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+					aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand glyphicon glyphicon-home" href="/home"> &raquo;</a>
+				<a class="navbar-brand" th:href="@{'/'+${user.username}}+'/home'" th:text="${user.username + ' &raquo;'}"></a>
+			</div>
+			<form class="navbar-form navbar-left" th:action="@{/search}"
+				method="post">
+				<div class="form-group">
+					<input type="text" class="form-control tags" name="search"
+						placeholder="Search for..." required="required"></input>
+				</div>
+				<button type="submit" class="btn btn-default">Search</button>
+			</form>
+			<div id="navbar" class="navbar-collapse collapse">
+				<form class="navbar-form navbar-right">
+					<div sec:authorize="isAuthenticated()">
+					<a sec:authorize="hasRole('ROLE_ADMIN')" class="navbar-brand glyphicon glyphicon-cog"
+							href="/admin"></a>
+						<a class="navbar-brand glyphicon glyphicon-user"
+							th:href="@{'/'+${#authentication.name}}+'/home'" th:text="${#authentication.name}"></a>
+							<a class="navbar-brand glyphicon glyphicon-log-out" th:href="@{/logout}">Logout</a>
+					</div>
+					<div sec:authorize="isAnonymous()">
+						<a class="navbar-brand glyphicon glyphicon-log-in"
+							th:href="@{/login}">Login</a>
+							<a class="navbar-brand glyphicon glyphicon-globe"
+							th:href="@{/registration}">Register</a>
+							
+					</div>
+				</form>
+			</div>
+			<!--/.navbar-collapse -->
+		</div>
+	</nav>
+	<div class="container">
+		<div class="row content">
+			<div class="col-md-2  col-xs-8 sidenav" style="margin-top: 2%; width: 25%">
+				<h3>Information about creator</h3>
+				<table class="table">
+					<tbody>
+						<tr>
+							<td>
+								<h4>Username:</h4>
+							</td>
+							<td>
+								<h4 th:text="${user.username}"></h4>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<h4>First name:</h4>
+							</td>
+							<td>
+								<h4 th:text="${user.firstName}"></h4>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<h4>Last name:</h4>
+							</td>
+							<td>
+								<h4 th:text="${user.lastName}"></h4>
+							</td>
+						</tr>
+						<tr>
+							<td>
+								<h4>Email:</h4>
+							</td>
+							<td>
+								<h4 th:text="${user.email}"></h4>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+
+			<div class="col-md-8" style="margin-top: 2%">
+			<h3 class="text-center alert alert-success" th:if="${congratulation}==true" id="acivementMessage" onclick="confirmAchievement()">Achievement unlocked!</h3>
+			<h3 class="text-center">User sites</h3>
+				<ul>
+					<li th:each="site : ${sites}" class="col-md-3 col-xs-11 well site-block tagContainer" th:id="${site.id}" style="height:180px">
+					<div sec:authorize="hasRole('ROLE_USER')">
+					<div  th:if="${auth} == true" style="height: auto;">
+					<a class="glyphicon glyphicon-pencil" style="margin-left: 60%;text-decoration:none" role="button" th:href="@{|~/${#authentication.name}/${site.id}/edit|}">
+					</a>
+						<a class="glyphicon glyphicon-remove-circle" style="text-decoration:none" th:onclick="'deleteSite(\'' + ${site.id} + '\')'" role="button">
+					</a>
+					</div>
+					</div>
+					<div sec:authorize="hasRole('ROLE_ADMIN')">
+					<a class="glyphicon glyphicon-pencil" style="margin-left: 60%;text-decoration:none" role="button" th:href="@{|~/${site.username}/${site.id}/edit|}">
+					</a>
+						<a class="glyphicon glyphicon-remove-circle" style="text-decoration:none" th:onclick="'deleteSite(\'' + ${site.id} + '\')'" role="button">
+					</a>
+					</div>
+						<h4 class="text-ellipsis" >
+						Site name: 
+							<a th:href="@{'/'+${username}}+'/'+${site.id}+'/home'"
+								th:text="${site.siteName}"></a>
+								
+						</h4>
+						<p class="text-ellipsis">
+							<span class="glyphicon glyphicon-info-sign" data-toggle="tooltip" data-placement="right" title="Site discription"></span>
+							<span th:text="${site.description}"></span>
+						</p>
+					</li>
+					<li class="col-md-3  col-xs-11 well site-block"  th:if="${auth}==true" style="height:180px">
+						<h4>
+							<a class="glyphicon glyphicon-plus-sign"
+								th:href="@{'/'+${#authentication.name}}+'/newsite'"
+								role="button" style="font-size:90px;margin-left:20%;margin-top:10%;text-decoration:none"></a>
+						</h4>
+					</li>
+				</ul>
+			</div>
+			<div class="col-md-1 well" style="margin-top:3%;background:#eee">
+				<h4>Medals</h4>
+				<p class="glyphicon glyphicon-sunglasses"  data-toggle="tooltip" data-placement="left" th:if="${achievement2.active}==true" title="Get 10 likes" style="color:blue;font-size:300%">
+				</p>
+				<p class="glyphicon glyphicon-sunglasses"  data-toggle="tooltip" data-placement="left" th:if="${achievement2.active}==false" title="Get 10 likes" style="color:gray;font-size:300%">
+				</p>
+				<p class="glyphicon glyphicon-education"  data-toggle="tooltip" data-placement="left" th:if="${achievement1.active}==true" title="Create 3 sites" style="color:blue;font-size:300%">
+				</p>
+				<p class="glyphicon glyphicon-education"  data-toggle="tooltip" data-placement="left" th:if="${achievement1.active}==false" title="Create 3 sites" style="color:gray;font-size:300%">
+				</p>
+			</div>
+		</div>
+	</div>
+	<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>  
+<script
+	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+	<script th:src="@{/resources/static/js/user.js}"></script> 	
+	<script th:src="@{/resources/static/js/tags.js}"></script> 	
+</body>
+</html>

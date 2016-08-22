@@ -1,0 +1,49 @@
+body {
+  background-color: #eee;
+}
+
+
+.site-block{
+	float: left;
+	margin: 2%;
+}
+ul{
+    list-style-type: none;
+}
+.text-ellipsis{
+	width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.navbar {
+      margin-bottom: 0;
+      border-radius: 0;
+    }
+    
+    /* Add a gray background color and some padding to the footer */
+    footer {
+      background-color: #f2f2f2;
+      padding: 25px;
+    }
+    
+  .carousel-inner img {
+      width: 100%; /* Set width to 100% */
+      margin: auto;
+      min-height:200px;
+  }
+
+  /* Hide the carousel text when the screen is less than 600 pixels wide */
+  @media (max-width: 600px) {
+    .carousel-caption {
+      display: none; 
+    }
+  }
+  @media screen and (max-width: 767px) {
+      .sidenav {
+        height: auto;
+        background-color: #f2f2f2;
+        padding: 15px;
+      }
+      .row.content {height:auto;} 
+    }

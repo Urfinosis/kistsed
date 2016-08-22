@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+      xmlns:c="http://java.sun.com/jsp/jstl/core">
+<head>
+<meta charset="UTF-8"/>
+<title>EditorPage</title>
+		<link rel="stylesheet" type="text/css" th:href="@{/resources/static/css/style.css}"/>
+		<link rel="stylesheet" type="text/css" th:href="@{/resources/static/css/jquery-impromptu.css}"/>
+		<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"/>
+        <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css"/>
+		<link rel="stylesheet"
+	href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css" />
+</head>
+<body>
+<nav class="navbar navbar-inverse">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed"
+					data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+					aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand glyphicon glyphicon-home" href="/home"> &raquo;</a>
+				<a class="navbar-brand" th:href="@{'/'+${page.username}}+'/home'" th:text="${page.username+' &raquo;'}"></a>
+				<a class="navbar-brand" th:href="@{'/'+${site.username}}+'/'+${site.id}+'/home'" th:text="${site.siteName + ' &raquo;'}"></a>
+				<a class="navbar-brand" th:href="@{'/'+${site.username}}+'/'+${site.id}+'/'+${pageId}" th:text="${pageName + ' &raquo;'}"></a>
+			</div>
+			<form class="navbar-form navbar-left" th:action="@{/search}"
+				method="post">
+				<div class="form-group">
+					<input type="text" class="form-control tags" name="search"
+						placeholder="Search for..." required="required"></input>
+				</div>
+				<button type="submit" class="btn btn-default">Search</button>
+			</form>
+			<div id="navbar" class="navbar-collapse collapse">
+				<form class="navbar-form navbar-right">
+					<div sec:authorize="isAuthenticated()">
+					<a sec:authorize="hasRole('ROLE_ADMIN')" class="navbar-brand glyphicon glyphicon-cog"
+							href="/admin"></a>
+						<a class="navbar-brand glyphicon glyphicon-user"
+							th:href="@{'/'+${#authentication.name}}+'/home'" th:text="${#authentication.name}"></a>
+							<a class="navbar-brand glyphicon glyphicon-log-out" th:href="@{/logout}">Logout</a>
+					</div>
+					<div sec:authorize="isAnonymous()">
+						<a class="navbar-brand glyphicon glyphicon-log-in"
+							th:href="@{/login}">Login</a>
+							<a class="navbar-brand glyphicon glyphicon-globe"
+							th:href="@{/registration}">Register</a>
+					</div>
+				</form>
+			</div>
+			<!--/.navbar-collapse -->
+		</div>
+	</nav>
+	<div class="jumbotron">
+		<div class="modal-dialog" style="margin-left: 15%;">
+        	<div class="modal-content modal-lg center-block">
+        		<div class="modal-body">
+        			<form class="col-md-12 center-block" th:action="@{|~/${page.username}/${idSite}/${idPage}/doEdit|}" method="post">
+        				<div class="form-group">
+        					<input type="hidden" name="idSite" th:value="${idSite}"/>
+        				</div>
+        				<div class="form-group">
+        					<input type="hidden" name="content"/>
+        				</div>
+        				<div class="form-group">
+        					<input id="template" type="hidden" name="numContainers" th:value="${numContainers}"/>
+        				</div>
+        			<div class="" style="border: solid 1px black; height: auto;padding:14px;margin-bottom: 10px">
+               			<div class="row">
+               			<div class="col-md-10">
+                            <div class="btn-default btn draggable-text"><span class="for-span glyphicon glyphicon-font"></span>Text</div>
+                            <div class="btn-default btn draggable-video" ><span class="for-span glyphicon glyphicon-facetime-video"></span>Video</div>
+                            <div class="btn-default btn draggable-gallery" ><span class="for-span glyphicon glyphicon-picture"></span>Image</div>
+                            <div class="btn-default btn draggable-raiting" ><span class="for-span glyphicon glyphicon-thumbs-up"></span>Rating</div>
+                            <div class="btn-default btn draggable-comment" ><span class="for-span glyphicon glyphicon glyphicon-comment"></span>Comments</div>
+                            <div class="btn-default btn draggable-tabble" ><span class="for-span glyphicon glyphicon glyphicon-th"></span>Table</div>
+                		</div>
+                		<div class="col-md-2">
+                		<div class="btn-group">
+  							<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+  							  Template <span class="caret"></span>
+  							</button>
+ 							 <ul class="dropdown-menu">
+   							 <li><a onclick="selectFirstTemplate()">1</a></li>
+   							 <li><a onclick="selectSecondTemplate()">2</a></li>
+   							 <li><a onclick="selectThirdTemplate()">3</a></li>
+ 							 </ul>
+						</div>
+						</div>
+						</div>
+          			</div>
+          			<div th:switch="${numContainers}">
+          				<div id="dropableContainer">
+          					<div th:case="1">
+          						<div id="1" class="jumbotron droppable" style="border: solid 1px black; height: auto;">
+          							<div th:each="content : ${contents1}">
+          							<p th:text="${content.idPage}" id="idPage" style="display: none;"></p>
+									<p th:text="${content.idSite}" id="idSite" style="display: none;"></p>
+          								<div th:switch="${content.typeContent}">
+          									<div th:case="1">
+												<div class="content"><textarea style="margin-left: 2%;resize:vertical; width:95%" class="form-control markdown-field" th:text="${content.content}"></textarea></div> 
+											</div>
+											<div th:case="2">
+												<div id="iframe" class="container-fluid">
+		                                	    	<div class="content col-md-8 padding-zero embed-responsive embed-responsive-16by9">
+		                                        		<iframe class="embed-responsive-item" th:src="${content.content}" frameborder="0" allowfullscreen="true"></iframe>
+		                                    		</div>
+		                                    	</div>
+											</div>
+											<div th:case="3">
+												<div class="content">
+													<div class="navbar-right existing-draggable-like" style="font-size: 17px; margin-right: 20px;">
+															<span class="btn glyphicon glyphicon-thumbs-up" style="font-size: 20px;"></span> <b id="likeId" th:text="${content.content}"></b>
+													</div>
+												</div>											
+											</div>
+											<div th:case="4">
+												<div class="modal-dialog existing-draggable-comment">
+													<div class="modal-content">
+														<div class="modal-header">
+															<div id="blockComment"></div>
+														</div>
+														<div class="modal-body content">
+																<textarea id="message" style="resize: vertical; width: 95%" class="form-control markdown-field comment"></textarea>
+																<div class="modal-footer">
+																	<div class="col-md-13">
+																		<a class="btn btn-primary" id="send">Send</a>
+																	</div>
+																</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div th:case="5">
+												<div class="content">
+													<div class="graphic existing-draggable-table" id="placeholder" style="width: 600px; height: 300px;"></div>
+													</div>
+											</div>
+											<div th:case="6">
+									<div class="content well row" style="margin-left:5%;width:70%;">
+									<img class="images col-md-9" th:src="${content.content}"></img><div class="col-md-3">
+									<span class="glyphicon glyphicon-zoom-in" data-toggle="tooltip" th:onclick="'scaleOp(\''+${content.content}+'\',\'10\')'" style="font-size:60px;" data-placement="right" title="Zoom in" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-zoom-out" data-toggle="tooltip" th:onclick="'scaleOp(\''+${content.content}+'\',\'-10\')'" style="font-size:60px;" data-placement="right" title="Zoom out" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-adjust" data-toggle="tooltip" th:onclick="'effect(\''+${content.content}+'\')'" style="font-size:60px;" data-placement="right" title="Some effect" aria-hidden="true"></span>
+									</div></div>
+								</div>
+          								</div>
+          							</div>
+          						</div>
+          					</div>
+          					<div th:case="2">
+          						<div class="row">
+  	         						 <div class="col-md-6">
+  	          							<div id="1" class="jumbotron droppable" style="border: solid 1px black; height: auto;">
+  	          							<div th:each="content : ${contents1}">
+          							<p th:text="${content.idPage}" id="idPage" style="display: none;"></p>
+									<p th:text="${content.idSite}" id="idSite" style="display: none;"></p>
+          								<div th:switch="${content.typeContent}">
+          									<div th:case="1">
+												<div class="content"><textarea style="margin-left: 2%;resize:vertical; width:95%" class="form-control markdown-field" th:text="${content.content}"></textarea></div> 
+											</div>
+											<div th:case="2">
+												<div id="iframe" class="container-fluid">
+		                                	    	<div class="content col-md-8 padding-zero embed-responsive embed-responsive-16by9">
+		                                        		<iframe class="embed-responsive-item" th:src="${content.content}" frameborder="0" allowfullscreen="true"></iframe>
+		                                    		</div>
+		                                    	</div>
+											</div>
+											<div th:case="3">
+												<div class="content">
+													<div class="navbar-right existing-draggable-like" style="font-size: 17px; margin-right: 20px;">
+															<span class="btn glyphicon glyphicon-thumbs-up" style="font-size: 20px;"></span> <b id="likeId" th:text="${content.content}"></b>
+													</div>
+												</div>											
+											</div>
+											<div th:case="4">
+												<div class="modal-dialog existing-draggable-comment">
+													<div class="modal-content">
+														<div class="modal-header">
+															<div id="blockComment"></div>
+														</div>
+														<div class="modal-body content">
+																<textarea id="message" style="resize: vertical; width: 95%" class="form-control markdown-field comment"></textarea>
+																<div class="modal-footer">
+																	<div class="col-md-13">
+																		<a class="btn btn-primary" id="send">Send</a>
+																	</div>
+																</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div th:case="5">
+												<div class="content">
+													<div class="graphic existing-draggable-table" id="placeholder" style="width: 600px; height: 300px;"></div>
+													</div>
+											</div>
+											<div th:case="6">
+									<div class="content well row" style="margin-left:5%;width:70%;">
+									<img class="images col-md-9" th:src="${content.content}"></img><div class="col-md-3">
+									<span class="glyphicon glyphicon-zoom-in" data-toggle="tooltip" th:onclick="'scaleOp(\''+${content.content}+'\',\'10\')'" style="font-size:60px;" data-placement="right" title="Zoom in" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-zoom-out" data-toggle="tooltip" th:onclick="'scaleOp(\''+${content.content}+'\',\'-10\')'" style="font-size:60px;" data-placement="right" title="Zoom out" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-adjust" data-toggle="tooltip" th:onclick="'effect(\''+${content.content}+'\')'" style="font-size:60px;" data-placement="right" title="Some effect" aria-hidden="true"></span>
+									</div></div>
+								</div>
+          								</div>
+          							</div>
+  	          							</div>
+  	          						</div>
+  	          						<div class="col-md-6">
+  	          							<div id="2" class="jumbotron droppable" style="border: solid 1px black; height: auto;">
+  	          							<div th:each="content : ${contents2}">
+          							<p th:text="${content.idPage}" id="idPage" style="display: none;"></p>
+									<p th:text="${content.idSite}" id="idSite" style="display: none;"></p>
+          								<div th:switch="${content.typeContent}">
+          									<div th:case="1">
+												<div class="content"><textarea style="margin-left: 2%;resize:vertical; width:95%" class="form-control markdown-field" th:text="${content.content}"></textarea></div> 
+											</div>
+											<div th:case="2">
+												<div id="iframe" class="container-fluid">
+		                                	    	<div class="content col-md-8 padding-zero embed-responsive embed-responsive-16by9">
+		                                        		<iframe class="embed-responsive-item" th:src="${content.content}" frameborder="0" allowfullscreen="true"></iframe>
+		                                    		</div>
+		                                    	</div>
+											</div>
+											<div th:case="3">
+												<div class="content">
+													<div class="navbar-right existing-draggable-like" style="font-size: 17px; margin-right: 20px;">
+															<span class="btn glyphicon glyphicon-thumbs-up" style="font-size: 20px;"></span> <b id="likeId" th:text="${content.content}"></b>
+													</div>
+												</div>											
+											</div>
+											<div th:case="4">
+												<div class="modal-dialog existing-draggable-comment">
+													<div class="modal-content">
+														<div class="modal-header">
+															<div id="blockComment"></div>
+														</div>
+														<div class="modal-body content">
+																<textarea id="message" style="resize: vertical; width: 95%" class="form-control markdown-field comment"></textarea>
+																<div class="modal-footer">
+																	<div class="col-md-13">
+																		<a class="btn btn-primary" id="send">Send</a>
+																	</div>
+																</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div th:case="5">
+												<div class="content">
+													<div class="graphic existing-draggable-table" id="placeholder" style="width: 600px; height: 300px;"></div>
+													</div>
+											</div>
+											<div th:case="6">
+									<div class="content well row" style="margin-left:5%;width:70%;">
+									<img class="images col-md-9" th:src="${content.content}"></img><div class="col-md-3">
+									<span class="glyphicon glyphicon-zoom-in" data-toggle="tooltip" th:onclick="'scaleOp(\''+${content.content}+'\',\'10\')'" style="font-size:60px;" data-placement="right" title="Zoom in" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-zoom-out" data-toggle="tooltip" th:onclick="'scaleOp(\''+${content.content}+'\',\'-10\')'" style="font-size:60px;" data-placement="right" title="Zoom out" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-adjust" data-toggle="tooltip" th:onclick="'effect(\''+${content.content}+'\')'" style="font-size:60px;" data-placement="right" title="Some effect" aria-hidden="true"></span>
+									</div></div>
+								</div>
+          								</div>
+          							</div>
+  	          							</div>
+  	         						</div>
+  	          					</div>
+          					</div>
+          					<div th:case="3">
+          						<div class="row">
+  	         						<div class="col-md-6">
+  	          							<div id="1" class="jumbotron droppable" style="border: solid 1px black; height: auto;">
+  	          							<div th:each="content : ${contents1}">
+          							<p th:text="${content.idPage}" id="idPage" style="display: none;"></p>
+									<p th:text="${content.idSite}" id="idSite" style="display: none;"></p>
+          								<div th:switch="${content.typeContent}">
+          									<div th:case="1">
+												<div class="content"><textarea style="margin-left: 2%;resize:vertical; width:95%" class="form-control markdown-field" th:text="${content.content}"></textarea></div> 
+											</div>
+											<div th:case="2">
+												<div id="iframe" class="container-fluid">
+		                                	    	<div class="content col-md-8 padding-zero embed-responsive embed-responsive-16by9">
+		                                        		<iframe class="embed-responsive-item" th:src="${content.content}" frameborder="0" allowfullscreen="true"></iframe>
+		                                    		</div>
+		                                    	</div>
+											</div>
+											<div th:case="3">
+												<div class="content">
+													<div class="navbar-right existing-draggable-like" style="font-size: 17px; margin-right: 20px;">
+															<span class="btn glyphicon glyphicon-thumbs-up" style="font-size: 20px;"></span> <b id="likeId" th:text="${content.content}"></b>
+													</div>
+												</div>											
+											</div>
+											<div th:case="4">
+												<div class="modal-dialog existing-draggable-comment">
+													<div class="modal-content">
+														<div class="modal-header">
+															<div id="blockComment"></div>
+														</div>
+														<div class="modal-body content">
+																<textarea id="message" style="resize: vertical; width: 95%" class="form-control markdown-field comment"></textarea>
+																<div class="modal-footer">
+																	<div class="col-md-13">
+																		<a class="btn btn-primary" id="send">Send</a>
+																	</div>
+																</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div th:case="5">
+												<div class="content">
+													<div class="graphic existing-draggable-table" id="placeholder" style="width: 600px; height: 300px;"></div>
+													</div>	
+											</div>
+											<div th:case="6">
+									<div class="content well row" style="margin-left:5%;width:70%;">
+									<img class="images col-md-9" th:src="${content.content}"></img><div class="col-md-3">
+									<span class="glyphicon glyphicon-zoom-in" data-toggle="tooltip" th:onclick="'scaleOp(\''+${content.content}+'\',\'10\')'" style="font-size:60px;" data-placement="right" title="Zoom in" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-zoom-out" data-toggle="tooltip" th:onclick="'scaleOp(\''+${content.content}+'\',\'-10\')'" style="font-size:60px;" data-placement="right" title="Zoom out" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-adjust" data-toggle="tooltip" th:onclick="'effect(\''+${content.content}+'\')'" style="font-size:60px;" data-placement="right" title="Some effect" aria-hidden="true"></span>
+									</div></div>
+								</div>
+          								</div>
+          							</div>
+  	         							</div>
+  	         						</div>
+  	          						<div class="col-md-6">
+  	          							<div id="2" class="jumbotron droppable" style="border: solid 1px black; height: auto;">
+  	          								<div th:each="content : ${contents2}">
+          							<p th:text="${content.idPage}" id="idPage" style="display: none;"></p>
+									<p th:text="${content.idSite}" id="idSite" style="display: none;"></p>
+          								<div th:switch="${content.typeContent}">
+          									<div th:case="1">
+												<div class="content"><textarea style="margin-left: 2%;resize:vertical; width:95%" class="form-control markdown-field" th:text="${content.content}"></textarea></div> 
+											</div>
+											<div th:case="2">
+												<div id="iframe" class="container-fluid">
+		                                	    	<div class="content col-md-8 padding-zero embed-responsive embed-responsive-16by9">
+		                                        		<iframe class="embed-responsive-item" th:src="${content.content}" frameborder="0" allowfullscreen="true"></iframe>
+		                                    		</div>
+		                                    	</div>
+											</div>
+											<div th:case="3">
+												<div class="content">
+													<div class="navbar-right existing-draggable-like" style="font-size: 17px; margin-right: 20px;">
+															<span class="btn glyphicon glyphicon-thumbs-up" style="font-size: 20px;"></span> <b id="likeId" th:text="${content.content}"></b>
+													</div>
+												</div>											
+											</div>
+											<div th:case="4">
+												<div class="modal-dialog existing-draggable-comment">
+													<div class="modal-content">
+														<div class="modal-header">
+															<div id="blockComment"></div>
+														</div>
+														<div class="modal-body content">
+																<textarea id="message" style="resize: vertical; width: 95%" class="form-control markdown-field comment"></textarea>
+																<div class="modal-footer">
+																	<div class="col-md-13">
+																		<a class="btn btn-primary" id="send">Send</a>
+																	</div>
+																</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div th:case="5">
+												<div class="content">
+													<div class="graphic existing-draggable-table" id="placeholder" style="width: 600px; height: 300px;"></div>
+													</div>						
+											</div>
+											<div th:case="6">
+									<div class="content well row" style="margin-left:5%;width:70%;">
+									<img class="images col-md-9" th:src="${content.content}"></img><div class="col-md-3">
+									<span class="glyphicon glyphicon-zoom-in" data-toggle="tooltip" th:onclick="'scaleOp(\''+${content.content}+'\',\'10\')'" style="font-size:60px;" data-placement="right" title="Zoom in" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-zoom-out" data-toggle="tooltip" th:onclick="'scaleOp(\''+${content.content}+'\',\'-10\')'" style="font-size:60px;" data-placement="right" title="Zoom out" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-adjust" data-toggle="tooltip" th:onclick="'effect(\''+${content.content}+'\')'" style="font-size:60px;" data-placement="right" title="Some effect" aria-hidden="true"></span>
+									</div></div>
+								</div>
+          								</div>
+          							</div>
+  	          							</div>
+  	          						</div>
+  	          					</div>
+  	          							<div id="3" class="jumbotron droppable" style="border: solid 1px black; height: auto;">
+  	          							<div th:each="content : ${contents3}">
+          							<p th:text="${content.idPage}" id="idPage" style="display: none;"></p>
+									<p th:text="${content.idSite}" id="idSite" style="display: none;"></p>
+          								<div th:switch="${content.typeContent}">
+          									<div th:case="1">
+												<div class="content"><textarea style="margin-left: 2%;resize:vertical; width:95%" class="form-control markdown-field" th:text="${content.content}"></textarea></div> 
+											</div>
+											<div th:case="2">
+												<div id="iframe" class="container-fluid">
+		                                	    	<div class="content col-md-8 padding-zero embed-responsive embed-responsive-16by9">
+		                                        		<iframe class="embed-responsive-item" th:src="${content.content}" frameborder="0" allowfullscreen="true"></iframe>
+		                                    		</div>
+		                                    	</div>
+											</div>
+											<div th:case="3">
+												<div class="content">
+													<div class="navbar-right existing-draggable-like" style="font-size: 17px; margin-right: 20px;">
+															<span class="btn glyphicon glyphicon-thumbs-up" style="font-size: 20px;"></span> <b id="likeId" th:text="${content.content}"></b>
+													</div>
+												</div>											
+											</div>
+											<div th:case="4">
+												<div class="modal-dialog existing-draggable-comment">
+													<div class="modal-content">
+														<div class="modal-header">
+															<div id="blockComment"></div>
+														</div>
+														<div class="modal-body content">
+																<textarea id="message" style="resize: vertical; width: 95%" class="form-control markdown-field comment"></textarea>
+																<div class="modal-footer">
+																	<div class="col-md-13">
+																		<a class="btn btn-primary" id="send">Send</a>
+																	</div>
+																</div>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div th:case="5">
+												<div class="content">
+													<div class="graphic existing-draggable-table" id="placeholder" style="width: 600px; height: 300px;"></div>
+													</div>
+											</div>
+											<div th:case="6">
+									<div class="content well row" style="margin-left:5%;width:70%;">
+									<img class="images col-md-9" th:src="${content.content}"></img><div class="col-md-3">
+									<span class="glyphicon glyphicon-zoom-in" data-toggle="tooltip" th:onclick="'scaleOp(\''+${content.content}+'\',\'10\')'" style="font-size:60px;" data-placement="right" title="Zoom in" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-zoom-out" data-toggle="tooltip" th:onclick="'scaleOp(\''+${content.content}+'\',\'-10\')'" style="font-size:60px;" data-placement="right" title="Zoom out" aria-hidden="true"></span>
+									<span class="glyphicon glyphicon-adjust" data-toggle="tooltip" th:onclick="'effect(\''+${content.content}+'\')'" style="font-size:60px;" data-placement="right" title="Some effect" aria-hidden="true"></span>
+									</div></div>
+								</div>
+          								</div>
+          							</div>
+  	          							</div>
+          						</div>
+          					</div>
+          				</div>
+        				<div class="form-group">
+        					<input type="submit" class="btn btn-block btn-lg btn-primary" onclick="submitFrom()" value="Edit!"/>
+        				</div>
+        			</form>
+        			<div class="modal-footer">
+        				<div class="col-md-13">
+        					<a class="btn btn-primary" th:href="@{|~/${#authentication.name}/home|}">Cancel</a>
+        				</div>
+        			</div>
+        		</div>
+        	</div>
+        </div>
+        </div>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  	<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>   
+  	<script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>           
+    <script th:src="@{/resources/static/js/jquery-impromptu.js}"></script>
+    <script th:src="@{/resources/static/js/template.js}"></script> 
+    <script th:src="@{/resources/static/js/jquery.flot.js}"></script>	
+    <script th:src="@{/resources/static/js/editpage.js}"></script>	
+    <script th:src="@{/resources/static/js/graphic.js}"></script>		
+    <script th:src="@{/resources/static/js/user.js}"></script>	
+</body>
+</html>

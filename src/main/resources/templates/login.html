@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+<head>
+<title>Login</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet"
+	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+<link rel="stylesheet" th:href="@{resources/static/css/login.css}" />
+<link rel="stylesheet" th:href="@{/resources/static/css/min_decor.css}" />
+</head>
+<body>
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed"
+					data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+					aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand glyphicon glyphicon-home" href="/home"> &raquo;</a>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<form class="navbar-form navbar-right">
+					<a class="navbar-brand" href="?lang=ru">RU</a> <a
+						class="navbar-brand" href="?lang=en">EN</a>
+				</form>
+			</div>
+			<!--/.navbar-collapse -->
+		</div>
+	</nav>
+	<div class="container" style="margin-top: 5%">
+		<div class="alert alert-info" role="alert"
+			th:if="${session[SPRING_SECURITY_LAST_EXCEPTION]} == #{auth.message.disabled}"
+			th:with="errorMsg=#{auth.message.disabled}">
+			<p>
+				<b th:text="${errorMsg}"></b>
+			</p>
+			<b th:text="#{auth.message.resend.begin}"></b> <a
+				th:href="@{/resend_confirmation_message}" class="alert-link"
+				th:text="#{auth.message.here}"></a> <b
+				th:text="#{auth.message.resend.end}"></b>
+		</div>
+		<div class="alert alert-danger" role="alert"
+			th:if="${session[SPRING_SECURITY_LAST_EXCEPTION]} == #{message.badCredentials}"
+			th:with="errorMsg=#{message.badCredentials}">
+			<p class="text-center">
+				<b th:text="${errorMsg}"></b>
+			</p>
+		</div>
+		<div class="alert alert-warning text-center" role="alert"
+			th:if="${param.logout}">You have been logged out.</div>
+	</div>
+	<div class="container center-block">
+		<div class="row">
+			<div class="col-md-4"></div>
+			<div class="col-md-4">
+				<form class="col-md-12  form-signin" th:action="@{/login}"
+					method="post">
+					<h2 class="form-signin-heading">Please sign in</h2>
+					<div class="form-group">
+						<input type="text" class="form-control text-center input-lg"
+							th:value="${session[username]}" placeholder="Username"
+							name="username" autofocus="" required="required" pattern="^(([A-Z]*[a-z]*)+)$" title="Latin letters. Start from capital letter"/>
+					</div>
+					<div class="form-group">
+						<input type="password" class="form-control text-center input-lg"
+							placeholder="Password" name="password" required="required" pattern="(.){5,30}$" title="5-30 characters"/>
+					</div>
+					<div class="form-group">
+						<input type="submit" class="btn btn-block btn-lg btn-primary"
+							value="Sign in" />
+					</div>
+					<div class="row">
+						<div class="col-md-6">
+							<a class="btn btn-primary" style="width: 100%"
+								href="/registration">Register</a>
+						</div>
+						<div class="col-md-6">
+							<a class="btn btn-primary" style="width: 100%" th:href="@{/}">Cancel</a>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script
+	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</body>
+</html>

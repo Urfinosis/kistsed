@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<head>
+<title>Page</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="stylesheet"
+	href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+<link rel="stylesheet" th:href="@{/resources/static/css/min_decor.css}" />
+<link rel="stylesheet"
+	href="//code.jquery.com/ui/1.12.0/themes/base/jquery-ui.css" />
+<link rel="stylesheet" type="text/css"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css" />
+<style>
+.affix {
+	top: 20px;
+}
+</style>
+</head>
+<body th:style="${'background-color:'+theme.backgroundColor+';color:'+theme.fontColor}">
+	<p sec:authentication="name" id="name" style="display: none;"></p>
+	<nav class="navbar navbar-inverse">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed"
+					data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+					aria-controls="navbar">
+					<span class="sr-only">Toggle navigation</span> <span
+						class="icon-bar"></span> <span class="icon-bar"></span> <span
+						class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand glyphicon glyphicon-home" href="/home"> &raquo;</a> <a
+					class="navbar-brand" th:href="@{'/'+${site.username}}+'/home'"
+					th:text="${username + ' &raquo;'}"></a> <a class="navbar-brand"
+					th:href="@{'/'+${site.username}}+'/'+${site.id}+'/home'"
+					th:text="${site.siteName + ' &raquo;'}"></a> <a
+					class="navbar-brand"
+					th:href="@{'/'+${site.username}}+'/'+${site.id}+'/'+${pageId}"
+					th:text="${pageName + ' &raquo;'}"></a>
+			</div>
+			<form class="navbar-form navbar-left" th:action="@{/search}"
+				method="post">
+				<div class="form-group">
+					<input type="text" class="form-control tags" name="search"
+						placeholder="Search for..." required="required"></input>
+				</div>
+				<button type="submit" class="btn btn-default">Search</button>
+			</form>
+			<div id="navbar" class="navbar-collapse collapse">
+				<form class="navbar-form navbar-right">
+					<div sec:authorize="isAuthenticated()">
+					<a sec:authorize="hasRole('ROLE_ADMIN')" class="navbar-brand glyphicon glyphicon-cog"
+							href="/admin"></a>
+						<a class="navbar-brand glyphicon glyphicon-user"
+							th:href="@{'/'+${#authentication.name}}+'/home'"
+							th:text="${#authentication.name}"></a> <a
+							class="navbar-brand glyphicon glyphicon-log-out"
+							th:href="@{/logout}">Logout</a>
+					</div>
+					<div sec:authorize="isAnonymous()">
+						<a class="navbar-brand glyphicon glyphicon-log-in"
+							th:href="@{/login}">Login</a>
+							<a class="navbar-brand glyphicon glyphicon-globe"
+							th:href="@{/registration}">Register</a>
+							
+					</div>
+				</form>
+			</div>
+			<!--/.navbar-collapse -->
+		</div>
+	</nav>
+	<div class="container">
+		<div class="row">
+			<nav class="col-sm-2">
+				<ul class="nav nav-pills nav-stacked" data-spy="affix"
+					data-offset-top="205">
+					<li class="active"><a class="text-center text-ellipsis"
+						style="width: 100px" data-toggle="tooltip" data-placement="right"
+						th:title="${pageName}"
+						th:href="@{'/'+${site.username}}+'/'+${site.id}+'/'+ ${pageId}"
+						th:text="${pageName}"></a></li>
+					<li th:each="page : ${pages}" th:if="${page.id}!=${pageId}"><a
+						class="text-center text-ellipsis" style="width: 100px"
+						data-toggle="tooltip" data-placement="right"
+						th:title="${page.pageName}"
+						th:href="@{'/'+${site.username}}+'/'+${site.id}+'/'+ ${page.id}"
+						th:text="${page.pageName}"></a></li>
+				</ul>
+			</nav>
+			<div class="col-sm-10">
+				<div th:switch="${numContainers}">
+					<div th:case="1">
+						<div class="col-md-12" th:each="content : ${contents1}">
+							<p th:text="${content.idPage}" id="idPage" style="display: none;"></p>
+							<p th:text="${content.idSite}" id="idSite" style="display: none;"></p>
+							<div class="col-md-12" th:switch="${content.typeContent}">
+								<h3 th:case="1" class="col-md-12" style="word-wrap: break-word"
+									th:text="${content.content}"></h3>
+								<div th:case="2">
+									<div class="container-fluid">
+										<div class="col-md-2"></div>
+										<div
+											class="content col-md-8 padding-zero embed-responsive embed-responsive-16by9">
+											<iframe class="embed-responsive-item"
+												th:src="${content.content}" style="height: 90%;margin-top:2%;"
+												frameborder="0" allowfullscreen="true"></iframe>
+										</div>
+									</div>
+								</div>
+								<div th:case="3">
+									<div class="navbar-right"
+										style="font-size: 17px; margin-right: 20px;">
+										<div sec:authorize="isAuthenticated()">
+											<span class="btn glyphicon glyphicon-thumbs-up"
+												style="font-size: 20px;"
+												th:onclick="'addLike(\'' + ${idPage} + '\')'"></span> <b
+												id="likeId" th:text="${content.content}"></b>
+										</div>
+										<div sec:authorize="isAnonymous()">
+											<span class="btn glyphicon glyphicon-thumbs-up"
+												style="font-size: 20px;"></span> <b id="likeId"
+												th:text="${content.content}"></b>
+										</div>
+										<p id="divPageId" th:text="${content.idPage}"
+											style="display: none;"></p>
+									</div>
+								</div>
+								<div th:case="4">
+									<div class="col-md-1"></div>
+									<div class="well col-md-10" th:style="'margin-right: 8%;background:'+${theme.comentColor}">
+										<div class="content">
+											<h3>Comments:</h3>
+											<div class="content modal-header"
+												sec:authorize="isAuthenticated()">
+												<textarea id="message" style="resize: vertical; width: 100%"
+													class="form-control markdown-field comment"></textarea>
+												<div style="width: 100%">
+													<div>
+														<a class="btn btn-primary col-md-12" id="send"
+															th:onclick="'send(\'' + ${theme.comentColor} + '\')'">Send</a>
+													</div>
+												</div>
+											</div>
+											<div class="pre-scrollable" style="height: 200px;">
+												<div id="blockComment"></div>
+												<div th:each="comment : ${comments}">
+													<p class="well well-sm" th:style="'background:'+${theme.comentColor}">
+														<span th:text="${comment.username}"></span> say: <span
+															th:text="${comment.message}"></span>
+													</p>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div th:case="5">
+									<div id="placeholder" style="width: 600px; height: 300px;"></div>
+								</div>
+								<div th:case="6" style="margin-top:2%;">
+									<img th:src="${content.content}"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div th:case="2">
+						<div class="row">
+							<div class="col-md-6">
+								<div th:each="content : ${contents1}">
+									<p th:text="${content.idPage}" id="idPage"
+										style="display: none;"></p>
+									<p th:text="${content.idSite}" id="idSite"
+										style="display: none;"></p>
+									<div th:switch="${content.typeContent}">
+										<h3 th:case="1" class="col-md-12"
+											style="word-wrap: break-word" th:text="${content.content}"></h3>
+										<div th:case="2">
+											<div class="container-fluid">
+												<div class="col-md-1"></div>
+												<div
+													class="content col-md-10 padding-zero embed-responsive embed-responsive-16by9">
+													<iframe class="embed-responsive-item"
+														th:src="${content.content}" style="height: 90%;margin-top:2%;"
+														frameborder="0" allowfullscreen="true"></iframe>
+												</div>
+											</div>
+										</div>
+										<div th:case="3">
+											<div class="navbar-right"
+												style="font-size: 17px; margin-right: 20px;">
+												<div sec:authorize="isAuthenticated()">
+													<span class="btn glyphicon glyphicon-thumbs-up"
+														style="font-size: 20px;"
+														th:onclick="'addLike(\'' + ${idPage} + '\')'"></span> <b
+														id="likeId" th:text="${content.content}"></b>
+												</div>
+												<div sec:authorize="isAnonymous()">
+													<span class="btn glyphicon glyphicon-thumbs-up"
+														style="font-size: 20px;"></span> <b id="likeId"
+														th:text="${content.content}"></b>
+												</div>
+												<p id="divPageId" th:text="${content.idPage}"
+													style="display: none;"></p>
+											</div>
+										</div>
+										<div th:case="4">
+											<div class="col-md-1"></div>
+											<div class="well col-md-10" th:style="'margin-right: 8%;background:'+${theme.comentColor}">
+												<div class="content">
+													<h3>Comments:</h3>
+													<div class="content modal-header"
+														sec:authorize="isAuthenticated()">
+														<textarea id="message"
+															style="resize: vertical; width: 100%"
+															class="form-control markdown-field comment"></textarea>
+														<div style="width: 100%">
+															<div>
+																<a class="btn btn-primary col-md-12" id="send"
+																	th:onclick="'send(\'' + ${theme.comentColor} + '\')'">Send</a>
+															</div>
+														</div>
+													</div>
+													<div class="pre-scrollable" style="height: 200px;">
+														<div id="blockComment"></div>
+														<div th:each="comment : ${comments}">
+															<p class="well well-sm" th:style="'background:'+${theme.comentColor}">
+																<span th:text="${comment.username}"></span> say: <span
+																	th:text="${comment.message}"></span>
+															</p>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div th:case="5">
+											<div id="placeholder" style="width: 600px; height: 300px;"></div>
+										</div>
+										<div th:case="6">
+									<img th:src="${content.content}" style="margin-top:2%;"/>
+								</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div th:each="content : ${contents2}">
+									<p th:text="${content.idPage}" id="idPage"
+										style="display: none;"></p>
+									<p th:text="${content.idSite}" id="idSite"
+										style="display: none;"></p>
+									<div th:switch="${content.typeContent}">
+										<h3 th:case="1" class="col-md-12"
+											style="word-wrap: break-word" th:text="${content.content}"></h3>
+										<div th:case="2">
+											<div class="container-fluid">
+												<div class="col-md-1"></div>
+												<div
+													class="content col-md-10 padding-zero embed-responsive embed-responsive-16by9">
+													<iframe class="embed-responsive-item"
+														th:src="${content.content}" style="height: 90%;margin-top:2%;"
+														frameborder="0" allowfullscreen="true"></iframe>
+												</div>
+											</div>
+										</div>
+										<div th:case="3">
+											<div class="navbar-right"
+												style="font-size: 17px; margin-right: 20px;">
+												<div sec:authorize="isAuthenticated()">
+													<span class="btn glyphicon glyphicon-thumbs-up"
+														style="font-size: 20px;"
+														th:onclick="'addLike(\'' + ${idPage} + '\')'"></span> <b
+														id="likeId" th:text="${content.content}"></b>
+												</div>
+												<div sec:authorize="isAnonymous()">
+													<span class="btn glyphicon glyphicon-thumbs-up"
+														style="font-size: 20px;"></span> <b id="likeId"
+														th:text="${content.content}"></b>
+												</div>
+												<p id="divPageId" th:text="${content.idPage}"
+													style="display: none;"></p>
+											</div>
+										</div>
+										<div th:case="4">
+											<div class="col-md-1"></div>
+											<div class="well col-md-10" th:style="'margin-right: 8%;background:'+${theme.comentColor}">
+												<div class="content">
+													<h3>Comments:</h3>
+													<div class="content modal-header"
+														sec:authorize="isAuthenticated()">
+														<textarea id="message"
+															style="resize: vertical; width: 100%"
+															class="form-control markdown-field comment"></textarea>
+														<div style="width: 100%">
+															<div>
+																<a class="btn btn-primary col-md-12" id="send"
+																	th:onclick="'send(\'' + ${theme.comentColor} + '\')'">Send</a>
+															</div>
+														</div>
+													</div>
+													<div class="pre-scrollable" style="height: 200px;">
+														<div id="blockComment"></div>
+														<div th:each="comment : ${comments}">
+															<p class="well well-sm" th:style="'background:'+${theme.comentColor}">
+																<span th:text="${comment.username}"></span> say: <span
+																	th:text="${comment.message}"></span>
+															</p>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div th:case="5">
+											<div id="placeholder" style="width: 600px; height: 300px;"></div>
+										</div>
+										<div th:case="6">
+									<img th:src="${content.content}" style="margin-top:2%;"/>
+								</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div th:case="3">
+						<div class="row">
+							<div class="col-md-6">
+								<div th:each="content : ${contents1}">
+									<p th:text="${content.idPage}" id="idPage"
+										style="display: none;"></p>
+									<p th:text="${content.idSite}" id="idSite"
+										style="display: none;"></p>
+									<div th:switch="${content.typeContent}">
+										<h3 th:case="1" class="col-md-12"
+											style="word-wrap: break-word" th:text="${content.content}"></h3>
+										<div th:case="2">
+											<div class="container-fluid">
+												<div class="col-md-1"></div>
+												<div
+													class="content col-md-10 padding-zero embed-responsive embed-responsive-16by9">
+													<iframe class="embed-responsive-item"
+														th:src="${content.content}" style="height: 90%;margin-top:2%;"
+														frameborder="0" allowfullscreen="true"></iframe>
+												</div>
+											</div>
+										</div>
+										<div th:case="3">
+											<div class="navbar-right"
+												style="font-size: 17px; margin-right: 20px;">
+												<div sec:authorize="isAuthenticated()">
+													<span class="btn glyphicon glyphicon-thumbs-up"
+														style="font-size: 20px;"
+														th:onclick="'addLike(\'' + ${idPage} + '\')'"></span> <b
+														id="likeId" th:text="${content.content}"></b>
+												</div>
+												<div sec:authorize="isAnonymous()">
+													<span class="btn glyphicon glyphicon-thumbs-up"
+														style="font-size: 20px;"></span> <b id="likeId"
+														th:text="${content.content}"></b>
+												</div>
+												<p id="divPageId" th:text="${content.idPage}"
+													style="display: none;"></p>
+											</div>
+										</div>
+										<div th:case="4">
+											<div class="col-md-1"></div>
+											<div class="well col-md-10" th:style="'margin-right: 8%;background:'+${theme.comentColor}">
+												<div class="content">
+													<h3>Comments:</h3>
+													<div class="content modal-header"
+														sec:authorize="isAuthenticated()">
+														<textarea id="message"
+															style="resize: vertical; width: 100%"
+															class="form-control markdown-field comment"></textarea>
+														<div style="width: 100%">
+															<div>
+																<a class="btn btn-primary col-md-12" id="send"
+																	th:onclick="'send(\'' + ${theme.comentColor} + '\')'">Send</a>
+															</div>
+														</div>
+													</div>
+													<div class="pre-scrollable" style="height: 200px;">
+														<div id="blockComment"></div>
+														<div th:each="comment : ${comments}">
+															<p class="well well-sm" th:style="'background:'+${theme.comentColor}">
+																<span th:text="${comment.username}"></span> say: <span
+																	th:text="${comment.message}"></span>
+															</p>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div th:case="5">
+											<div id="placeholder" style="width: 600px; height: 300px;"></div>
+										</div>
+										<div th:case="6">
+									<img th:src="${content.content}" style="margin-top:2%;"/>
+								</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-6">
+								<div th:each="content : ${contents2}">
+									<p th:text="${content.idPage}" id="idPage"
+										style="display: none;"></p>
+									<p th:text="${content.idSite}" id="idSite"
+										style="display: none;"></p>
+									<div th:switch="${content.typeContent}">
+										<h3 th:case="1" class="col-md-12"
+											style="word-wrap: break-word" th:text="${content.content}"></h3>
+										<div th:case="2">
+											<div class="container-fluid">
+												<div class="col-md-1"></div>
+												<div
+													class="content col-md-10 padding-zero embed-responsive embed-responsive-16by9">
+													<iframe class="embed-responsive-item"
+														th:src="${content.content}" style="height: 90%;margin-top:2%;"
+														frameborder="0" allowfullscreen="true"></iframe>
+												</div>
+											</div>
+										</div>
+										<div th:case="3">
+											<div class="navbar-right"
+												style="font-size: 17px; margin-right: 20px;">
+												<div sec:authorize="isAuthenticated()">
+													<span class="btn glyphicon glyphicon-thumbs-up"
+														style="font-size: 20px;"
+														th:onclick="'addLike(\'' + ${idPage} + '\')'"></span> <b
+														id="likeId" th:text="${content.content}"></b>
+												</div>
+												<div sec:authorize="isAnonymous()">
+													<span class="btn glyphicon glyphicon-thumbs-up"
+														style="font-size: 20px;"></span> <b id="likeId"
+														th:text="${content.content}"></b>
+												</div>
+												<p id="divPageId" th:text="${content.idPage}"
+													style="display: none;"></p>
+											</div>
+										</div>
+										<div th:case="4">
+											<div class="col-md-1"></div>
+											<div class="well col-md-10" th:style="'margin-right: 8%;background:'+${theme.comentColor}">
+												<div class="content">
+													<h3>Comments:</h3>
+													<div class="content modal-header"
+														sec:authorize="isAuthenticated()">
+														<textarea id="message"
+															style="resize: vertical; width: 100%"
+															class="form-control markdown-field comment"></textarea>
+														<div style="width: 100%">
+															<div>
+																<a class="btn btn-primary col-md-12" id="send"
+																	th:onclick="'send(\'' + ${theme.comentColor} + '\')'">Send</a>
+															</div>
+														</div>
+													</div>
+													<div class="pre-scrollable" style="height: 200px;">
+														<div id="blockComment"></div>
+														<div th:each="comment : ${comments}">
+															<p class="well well-sm" th:style="'background:'+${theme.comentColor}">
+																<span th:text="${comment.username}"></span> say: <span
+																	th:text="${comment.message}"></span>
+															</p>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div th:case="5">
+											<div id="placeholder" style="width: 600px; height: 300px;"></div>
+										</div>
+										<div th:case="6">
+									<img th:src="${content.content}" style="margin-top:2%;"/>
+								</div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div th:each="content : ${contents3}">
+							<p th:text="${content.idPage}" id="idPage" style="display: none;"></p>
+							<p th:text="${content.idSite}" id="idSite" style="display: none;"></p>
+							<div th:switch="${content.typeContent}">
+								<h3 th:case="1" class="col-md-12" style="word-wrap: break-word"
+									th:text="${content.content}"></h3>
+								<div th:case="2">
+									<div class="container-fluid">
+										<div class="col-md-2"></div>
+										<div
+											class="content col-md-8 padding-zero embed-responsive embed-responsive-16by9">
+											<iframe class="embed-responsive-item"
+												th:src="${content.content}" style="height: 90%;margin-top:2%;"
+												frameborder="0" allowfullscreen="true"></iframe>
+										</div>
+									</div>
+								</div>
+								<div th:case="3">
+									<div class="navbar-right"
+										style="font-size: 17px; margin-right: 20px;">
+										<div sec:authorize="isAuthenticated()">
+											<span class="btn glyphicon glyphicon-thumbs-up"
+												style="font-size: 20px;"
+												th:onclick="'addLike(\'' + ${idPage} + '\')'"></span> <b
+												id="likeId" th:text="${content.content}"></b>
+										</div>
+										<div sec:authorize="isAnonymous()">
+											<span class="btn glyphicon glyphicon-thumbs-up"
+												style="font-size: 20px;"></span> <b id="likeId"
+												th:text="${content.content}"></b>
+										</div>
+										<p id="divPageId" th:text="${content.idPage}"
+											style="display: none;"></p>
+									</div>
+								</div>
+								<div th:case="4">
+									<div class="col-md-1"></div>
+									<div class="well col-md-10" th:style="'margin-right: 8%;background:'+${theme.comentColor}">
+										<div class="content">
+											<h3>Comments:</h3>
+											<div class="content modal-header"
+												sec:authorize="isAuthenticated()">
+												<textarea id="message" style="resize: vertical; width: 100%"
+													class="form-control markdown-field comment"></textarea>
+												<div style="width: 100%">
+													<div>
+														<a class="btn btn-primary col-md-12" id="send"
+															th:onclick="'send(\'' + ${theme.comentColor} + '\')'">Send</a>
+													</div>
+												</div>
+											</div>
+											<div class="pre-scrollable" style="height: 200px;">
+												<div id="blockComment"></div>
+												<div th:each="comment : ${comments}">
+													<p class="well well-sm" th:style="'background:'+${theme.comentColor}">
+														<span th:text="${comment.username}"></span> say: <span
+															th:text="${comment.message}"></span>
+													</p>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div th:case="5">
+									<div id="placeholder" style="width: 600px; height: 300px;"></div>
+								</div>
+								<div th:case="6">
+									<img th:src="${content.content}" style="margin-top:2%;"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js"></script>
+<script
+	src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script th:src="@{/resources/static/js/jquery.flot.js}"></script>
+<script th:src="@{/resources/static/js/user.js}"></script>
+
+</body>
+</html>
